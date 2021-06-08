@@ -1,0 +1,36 @@
+{
+    "name": "andiwijaya/webapp",
+    "description": "Webapp bundle",
+    "license": "MIT",
+    "keywords": [ "andiwijaya" ],
+    "authors": [
+        {
+            "name": "Andi Wijaya",
+            "email": "andyv4@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "laravel/framework": ">5.8",
+        "laravel/slack-notification-channel": "^2.3",
+        "ixudra/curl": "^6.18",
+        "jenssegers/agent": "^2.6",
+        "maatwebsite/excel": "^3.1",
+        "predis/predis": "^1.1"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Andiwijaya\\WebApp\\WebAppServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Andiwijaya\\WebApp\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    }
+}
