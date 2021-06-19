@@ -26,16 +26,20 @@
   <link rel="stylesheet" media="print" href="/css/ui.min.css?v={{ assets_version() }}"/>
   <link rel="stylesheet" media="print" href="/css/all.min.css?v={{ assets_version() }}"/>
   <script type="text/javascript" src="/js/ui.min.js?v={{ assets_version() }}" defer></script>
-
   @stack('head')
+
 </head>
-<body>
+<body class="{{ $body['class'] ?? '' }}">
+
+  @stack('body-pre')
+
+  <div class="splash">
+  @if(!isset($no_splash) || !$no_splash)
+    @yield('splash')
+  @endif
+  </div>
 
   <div class="screen">
-    @if(!isset($page['no_splash']))
-    @yield('splash')
-    @endif
-
     @yield('screen')
   </div>
 

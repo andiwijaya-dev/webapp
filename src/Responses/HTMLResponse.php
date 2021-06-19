@@ -295,6 +295,8 @@ EOT;
 
   public function toResponse($request)
   {
+    $this->data[] = [ '_type'=>'script', 'script'=>"ui(\"meta[name='csrf-token']\").attr('content', '" . csrf_token() . "')" ];
+
     return response()->json($this->data, $this->status, $this->headers);
   }
 }
