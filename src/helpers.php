@@ -745,7 +745,7 @@ if(!function_exists('in_array_all')){
 
 if(!function_exists('save_image')){
 
-  function save_image($image, $disk = 'images'){
+  function save_image($image, $disk = 'images', $dir = ''){
 
     if(!is_file($image) && !filter_var($image, FILTER_VALIDATE_URL)) exc('Invalid file');
 
@@ -759,9 +759,11 @@ if(!function_exists('save_image')){
       $ext
     ]);
     //list($width, $height) = getimagesize($image);
+    
+    if(strlen($dir) > 0) $dir = $dir . '/';
 
-    if(!\Illuminate\Support\Facades\Storage::disk($disk)->exists($file_md5))
-      \Illuminate\Support\Facades\Storage::disk($disk)->put($file_md5, file_get_contents($image));
+    if(!\Illuminate\Support\Facades\Storage::disk($disk)->exists($dir . $file_md5))
+      \Illuminate\Support\Facades\Storage::disk($disk)->put($dir . $file_md5, file_get_contents($image));
 
     return $file_md5;
 
@@ -1713,4 +1715,14 @@ if(!function_exists('tail')){
     return trim($output);
   }
 
+}
+
+if(!function_exists('view_content')){
+
+  function view_content($view, $data = [], $mergeData = [], $section = 'content'){
+
+    return request()->ajax() ?
+      htmlresponse()->html('.' . $section, view($view, $data, $mergeData)->renderSections()[$section] ?? view($view, $data, $mergeData)->render()) :
+      view($view, $data, $mergeData);
+  }
 }

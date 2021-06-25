@@ -19,12 +19,12 @@
     <meta property="og:image"         content="{{ $page['og']['image'] ?? '' }}" />
   @endif
 
+  <link rel="stylesheet" media="print" href="/css/ui.min.css?v={{ assets_version() }}"/>
+  <link rel="stylesheet" media="print" href="/css/all.min.css?v={{ assets_version() }}"/>
   <style type="text/css" id="pre-style">
     .splash{ position: fixed; left:50%; top:50%; transform: translate3d(-50%, -50%, 0);display: none; }
     .screen{ visibility: hidden; }
   </style>
-  <link rel="stylesheet" media="print" href="/css/ui.min.css?v={{ assets_version() }}"/>
-  <link rel="stylesheet" media="print" href="/css/all.min.css?v={{ assets_version() }}"/>
   <script type="text/javascript" src="/js/ui.min.js?v={{ assets_version() }}" defer></script>
   @stack('head')
 
