@@ -69,19 +69,20 @@ class WebAppServiceProvider extends ServiceProvider
   }
 
   public function handle(Request $request){
-
+    
     if(config('webcache.enabled', 1) &&
       (count(config('webcache.hosts', [])) <= 0 || in_array($request->getHttpHost(), config('webcache.hosts', []))) &&
       !$this->app->runningInConsole() &&
       $request->method() == 'GET' &&
       !$request->has('web-cache-reload') &&
       !env('APP_DEBUG')){
-
+      
       if(Cache::has(WebCache::getKey($request))){
 
         global $kernel;
 
-        $response = Response::create(Cache::get(WebCache::getKey($this->app->request)));
+        $params = Cache::get(WebCache::getKey($this->app->request));
+        $response = Response::create($params['content'], 200, $params['headers'] ?? []);
 
         $response->send();
 

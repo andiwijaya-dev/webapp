@@ -44,6 +44,24 @@ class HTMLResponse implements Responsable {
     return $this;
   }
 
+  public function replaceOrAppend($target, $html, $options)
+  {
+    $this->data[] = [ '_type'=>'html', 'html'=>$html, 'mode'=>'replace-or-append', 'target'=>$target, 'options'=>$options ];
+    return $this;
+  }
+
+  public function replaceOrPrepend($target, $html, $options)
+  {
+    $this->data[] = [ '_type'=>'html', 'html'=>$html, 'mode'=>'replace-or-prepend', 'target'=>$target, 'options'=>$options ];
+    return $this;
+  }
+
+  public function remove($target, $options = []){
+
+    $this->data[] = [ '_type'=>'remove', 'target'=>$target, 'options'=>$options ];
+    return $this;
+  }
+
   public function text($text, $expr, array $data = []){
 
     $this->data[] = [ '_type'=>'text', 'text'=>$text, 'target'=>$expr ];
@@ -75,28 +93,23 @@ class HTMLResponse implements Responsable {
   }
 
 
-  public function alert($text, $type = 'error', $options = []){
-
-    $title = $text['title'] ?? $text;
-    $description = $text['description'] ?? '';
+  public function error($text, $description = '', $options = []){
 
     $this->data[] = [
-      '_type'=>'alert',
-      'type'=>$type,
-      'text'=>[ 'title'=>nl2br($title), 'description'=>$description ],
+      '_type'=>'error',
+      'text'=>$text,
+      'description'=>$description,
       'options'=>$options
     ];
     return $this;
   }
 
-  public function confirm($text, $callback, $options = []){
-
-    $title = $text['title'] ?? $text;
-    $description = $text['description'] ?? '';
+  public function info($text, $description = '', $options = []){
 
     $this->data[] = [
-      '_type'=>'confirm',
-      'text'=>[ 'title'=>nl2br($title), 'description'=>$description ],
+      '_type'=>'info',
+      'text'=>$text,
+      'description'=>$description,
       'options'=>$options
     ];
     return $this;

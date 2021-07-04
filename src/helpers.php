@@ -740,33 +740,50 @@ if(!function_exists('in_array_all')){
   function in_array_all($needles, $haystack) {
     return empty(array_diff($needles, $haystack));
   }
-
 }
 
 if(!function_exists('save_image')){
 
-  function save_image($image, $disk = 'images', $dir = ''){
+  function save_image($image, $disk = 'images', $dir = '', $urlprefix = ''){
 
-    if(!is_file($image) && !filter_var($image, FILTER_VALIDATE_URL)) exc('Invalid file');
+    $file_md5 = '';
 
-    if(is_object($image) && get_class($image) == \Illuminate\Http\UploadedFile::class)
-      $ext = $image->getClientOriginalExtension();
-    else
-      $ext = pathinfo($image, PATHINFO_EXTENSION);
+    if(filter_var($image, FILTER_VALIDATE_URL)){
 
-    $file_md5 = implode('.', [
-      md5_file($image),
-      $ext
-    ]);
-    //list($width, $height) = getimagesize($image);
-    
-    if(strlen($dir) > 0) $dir = $dir . '/';
+      $image_params = getimagesize($image);
+      if(isset($image_params['mime'])){
+        $mime = $image_params['mime'];
+        $ext = mime2ext($mime);
 
-    if(!\Illuminate\Support\Facades\Storage::disk($disk)->exists($dir . $file_md5))
-      \Illuminate\Support\Facades\Storage::disk($disk)->put($dir . $file_md5, file_get_contents($image));
+        $file_md5 = implode('.', [
+          md5_file($image),
+          $ext
+        ]);
 
-    return $file_md5;
+        if(strlen($dir) > 0) $dir = $dir . '/';
 
+        \Illuminate\Support\Facades\Storage::disk($disk)->put($dir . $file_md5, file_get_contents($image));
+      }
+    }
+    else if(is_file($image)){
+
+      if(is_object($image) && get_class($image) == \Illuminate\Http\UploadedFile::class)
+        $ext = $image->getClientOriginalExtension();
+      else
+        $ext = pathinfo($image, PATHINFO_EXTENSION);
+
+      $file_md5 = implode('.', [
+        md5_file($image),
+        $ext
+      ]);
+
+      if(strlen($dir) > 0) $dir = $dir . '/';
+
+      //if(!\Illuminate\Support\Facades\Storage::disk($disk)->exists($dir . $file_md5))
+        \Illuminate\Support\Facades\Storage::disk($disk)->put($dir . $file_md5, file_get_contents($image));
+    }
+
+    return $urlprefix . $file_md5;
   }
 
 }
@@ -1724,5 +1741,20 @@ if(!function_exists('view_content')){
     return request()->ajax() ?
       htmlresponse()->html('.' . $section, view($view, $data, $mergeData)->renderSections()[$section] ?? view($view, $data, $mergeData)->render()) :
       view($view, $data, $mergeData);
+  }
+}
+
+if(!function_exists('mask_email_address')){
+  function mask_email_address($email){
+
+    $result = $email;
+    if(filter_var($email, FILTER_VALIDATE_EMAIL)){
+
+      list($left, $right) = explode('@', $email);
+      $left = substr($left, 0, strlen($left) / 2) . str_pad('', strlen($left) / 2, '*');
+
+      $result = $left . '@' . $right;
+    }
+    return $result;
   }
 }
