@@ -27,6 +27,8 @@ class Handler extends ExceptionHandler
 
     public function report(Exception $exception)
     {
+      if($exception instanceof UserException) return;
+
       $message = substr($exception->getMessage(), 0, 255);
       $traces = $exception->getTraceAsString();
 
