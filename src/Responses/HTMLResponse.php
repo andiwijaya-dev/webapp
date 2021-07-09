@@ -56,9 +56,15 @@ class HTMLResponse implements Responsable {
     return $this;
   }
 
-  public function remove($target, $options = []){
+  public function remove($target, $parent = '', $options = []){
 
-    $this->data[] = [ '_type'=>'remove', 'target'=>$target, 'options'=>$options ];
+    $this->data[] = [ '_type'=>'remove', 'parent'=>$parent, 'target'=>$target, 'options'=>$options ];
+    return $this;
+  }
+
+  public function value($target, $value, array $options = [])
+  {
+    $this->data[] = [ '_type'=>'value', 'target'=>$target, 'value'=>$value, 'options'=>$options ];
     return $this;
   }
 
@@ -89,6 +95,14 @@ class HTMLResponse implements Responsable {
   public function htmlRequire($src, array $options = [])
   {
     $this->data[] = [ '_type'=>'require', 'src'=>$src, 'options'=>$options ];
+    return $this;
+  }
+
+  public function tap($func){
+
+    if(is_callable($func))
+      $func($this);
+
     return $this;
   }
 

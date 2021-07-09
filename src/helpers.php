@@ -18,7 +18,7 @@ if (! function_exists('exc')) {
   {
     $text = env('APP_DEBUG') && $debug != false ? $debug : $message;
     if(is_array($text)) $text = json_encode($text);
-
+    
     throw new \Andiwijaya\WebApp\Exceptions\UserException(($debug != false ? $message . ' ' : '') . $text);
 
   }

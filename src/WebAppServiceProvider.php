@@ -8,6 +8,7 @@ use Andiwijaya\WebApp\Console\Commands\WebCacheLoad;
 use Andiwijaya\WebApp\Facades\WebCache;
 use Andiwijaya\WebApp\Http\Middleware\WebCacheExcludedMiddleware;
 use Andiwijaya\WebApp\Http\Middleware\WebCacheMiddleware;
+use Andiwijaya\WebApp\Services\AuthService;
 use Andiwijaya\WebApp\Services\WebCacheService;
 use Andiwijaya\WebApp\Console\Commands\Ping;
 use Andiwijaya\WebApp\Console\Commands\ScheduledTaskRun;
@@ -40,11 +41,15 @@ class WebAppServiceProvider extends ServiceProvider
     $this->app->singleton('WebCache', function () {
       return new WebCacheService();
     });
+    
+    $this->app->singleton('Auth', function () {
+      return new AuthService();
+    });
   }
 
   public function provides()
   {
-    return [ 'WebCache' ];
+    return [ 'WebCache', 'Auth' ];
   }
 
   public function boot(Request $request){
