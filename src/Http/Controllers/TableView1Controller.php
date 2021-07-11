@@ -12,6 +12,7 @@ class TableView1Controller extends ActionableController
   protected $extends;
   protected $title;
   protected $model;
+  protected $id;
   protected $columns = [
     [ 'text'=>'', 'name'=>'options', 'width'=>50 ],
     [ 'text'=>'Name', 'name'=>'name', 'width'=>260, 'filterable'=>[ 'type'=>'string' ], 'sortable'=>true ],
@@ -35,6 +36,7 @@ class TableView1Controller extends ActionableController
     View::share([
       'extends'=>$this->extends,
       'title'=>$this->title,
+      'id'=>$this->id,
       'column_html'=>$this->renderHeader()
     ]);
     
@@ -47,51 +49,18 @@ class TableView1Controller extends ActionableController
 
     $html = [];
     foreach($data as $obj){
-
-      $id = $obj['id'] ?? '';
-
-      $tag = "<tr data-id=\"{$id}\">";
-      foreach($this->columns as $column){
-
-        $name = $column['name'] ?? '';
-        $text = $obj[$name] ?? '';
-        $datatype = $column['datatype'] ?? 'text';
-        $align = $column['align'] ?? '';
-        $class = $column['class'] ?? '';
-
-        switch($datatype){
-          case 'number':
-            $text = number_format(doubleval($text));
-            if(!$align) $align = 'align-right';
-            break;
-
-          case 'datetime':
-            $text = date('j M Y H:i', strtotime($text));
-            break;
-        }
-
-        $tag .= "<td class='{$align}'>";
-        if(method_exists($this, ($method = 'column' . ucwords(Str::camel($name))))){
-          $tag .= $this->$method($obj, $column);
-        }
-        else{
-          $tag .= "<label class=\"ellipsis {$class}\">{$text}</label>";
-        }
-        $tag .= "</td>";
-      }
-      $tag .= "</tr>";
-
-      $html[] = $tag;
+      
+      $html[] = $this->renderItem($obj);
     }
     $html = implode('', $html);
 
     $response = htmlresponse();
 
     if($page <= 1)
-      $response->value('#tableview1', $html, [ 'next_page'=>$next ])
-        ->html('#tableview1 .table-foot', $this->renderFooter($builder));
+      $response->value("#{$this->id}", $html, [ 'next_page'=>$next ])
+        ->html("#{$this->id} .table-foot", $this->renderFooter($builder));
     else
-      $response->append('#tableview1', $html, [ 'next_page'=>$next ]);
+      $response->append("#{$this->id}", $html, [ 'next_page'=>$next ]);
 
     return $response;
   }
@@ -235,6 +204,12 @@ class TableView1Controller extends ActionableController
       $sortable = $column['sortable'] ?? false;
 
       switch($datatype){
+
+        case 'bool':
+        case 'boolean':
+          if(!$align) $align = 'align-center';
+          break;
+
         case 'number':
           if(!$align) $align = 'align-right';
           break;
@@ -250,6 +225,65 @@ class TableView1Controller extends ActionableController
     }
 
     return implode('', $html);
+  }
+  
+  protected function renderItem($obj){
+
+    $id = $obj['id'] ?? '';
+    $tag = "<tr data-id=\"{$id}\">";
+    foreach($this->columns as $column){
+
+      $name = $column['name'] ?? '';
+      $text = $obj[$name] ?? '';
+      $datatype = $column['datatype'] ?? 'text';
+      $align = $column['align'] ?? '';
+      $class = $column['class'] ?? '';
+
+      switch($datatype){
+
+        case 'bool':
+        case 'boolean':
+          if(!$align) $align = 'align-center';
+          break;
+
+        case 'number':
+          $text = number_format(doubleval($text));
+          if(!$align) $align = 'align-right';
+          break;
+
+        case 'date':
+          $text = date('j M Y', strtotime($text));
+          break;
+
+        case 'datetime':
+          $text = date('j M Y H:i', strtotime($text));
+          break;
+      }
+
+      $tag .= "<td class='{$align}'>";
+      switch($datatype){
+
+        case 'bool':
+        case 'boolean':
+          if($text)
+            $tag .= "<label class='ellipsis'><span class='fa fa-check-circle cl-green'></span></label>";
+          else
+            $tag .= "<label class='ellipsis'><span class='fa fa-minus-circle cl-gray-500'></span></label>";
+          break;
+
+        default:
+          if(method_exists($this, ($method = 'column' . ucwords(Str::camel($name))))){
+            $tag .= $this->$method($obj, $column);
+          }
+          else{
+            $tag .= "<label class=\"ellipsis {$class}\">{$text}</label>";
+          }
+      }
+      $tag .= "</td>";
+    }
+    $tag .= "</tr>";
+    
+    return $tag;
   }
 
   protected function renderFooter($builder)
@@ -362,5 +396,12 @@ class TableView1Controller extends ActionableController
     return $response;
     // { name: "or|contains|123", "|between|2012-04-01,2021-04-22" }}
 
+  }
+
+  public function __construct()
+  {
+    if(!$this->id) $this->id = 'tableview1';
+
+    parent::__construct();
   }
 }

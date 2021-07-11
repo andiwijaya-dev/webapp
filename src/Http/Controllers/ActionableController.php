@@ -5,6 +5,7 @@ namespace Andiwijaya\WebApp\Http\Controllers;
 use Andiwijaya\WebApp\Exceptions\KnownException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use function foo\func;
 
@@ -80,5 +81,14 @@ class ActionableController extends BaseController{
   public function alertRequest(Request $request){
 
     return htmlresponse()->alert(json_encode($request->all(), JSON_PRETTY_PRINT));
+  }
+
+  public function validate(Request $request, array $rules, array $messages = [], array $customAttributes = [])
+  {
+    $validator = Validator::make($request->all(), $rules, $messages, $customAttributes);
+
+    if($validator->fails()){
+      exc(implode("<br />\n", $validator->errors()->all()));
+    }
   }
 }

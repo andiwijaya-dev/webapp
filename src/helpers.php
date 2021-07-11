@@ -747,7 +747,7 @@ if(!function_exists('save_image')){
   function save_image($image, $disk = 'images', $dir = '', $urlprefix = ''){
 
     $file_md5 = '';
-
+    
     if(filter_var($image, FILTER_VALIDATE_URL)){
 
       $image_params = getimagesize($image);

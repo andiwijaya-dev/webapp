@@ -50,7 +50,7 @@
     </div>
 
     <div class="my-2">
-      <div data-type="table" id="tableview1" data-event data-init-click="[value=load]">
+      <div data-type="table" id="{{ $id }}" data-event data-init-click="[value=load]">
         <div class="table-head">
           <table>
             <thead>
@@ -61,7 +61,7 @@
             </thead>
           </table>
         </div>
-        <div class="table-body v-scrollable h-60h"></div>
+        <div class="table-body v-scrollable h-60h" data-event data-scroll-check-appear></div>
         <div class="table-foot"></div>
       </div>
     </div>

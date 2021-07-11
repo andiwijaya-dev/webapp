@@ -32,6 +32,12 @@ class HTMLResponse implements Responsable {
     return $this;
   }
 
+  public function close($target, array $params = []){
+
+    $this->data[] = [ '_type'=>'method', 'method'=>'close', 'target'=>$target, 'params'=>$params ];
+    return $this;
+  }
+
   public function html($target, $html, $options = []){
 
     $this->data[] = [ '_type'=>'html', 'html'=>$html, 'target'=>$target, 'options'=>$options ];
@@ -44,13 +50,13 @@ class HTMLResponse implements Responsable {
     return $this;
   }
 
-  public function replaceOrAppend($target, $html, $options)
+  public function replaceOrAppend($target, $html, $options = [])
   {
     $this->data[] = [ '_type'=>'html', 'html'=>$html, 'mode'=>'replace-or-append', 'target'=>$target, 'options'=>$options ];
     return $this;
   }
 
-  public function replaceOrPrepend($target, $html, $options)
+  public function replaceOrPrepend($target, $html, $options = [])
   {
     $this->data[] = [ '_type'=>'html', 'html'=>$html, 'mode'=>'replace-or-prepend', 'target'=>$target, 'options'=>$options ];
     return $this;
