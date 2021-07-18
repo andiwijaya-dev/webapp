@@ -16,7 +16,8 @@ class Config extends Model
 
   protected $fillable = [ 'key', 'value' ];
 
-  protected $casts = [
-    'value'=>'array'
-  ];
+  public static function get($key, $default_value = '')
+  {
+    return Config::where('key', $key)->first()->value ?? $default_value;
+  }
 }

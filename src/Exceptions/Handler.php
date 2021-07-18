@@ -8,16 +8,19 @@ use Andiwijaya\WebApp\Notifications\SlackNotification;
 use App\Notifications\LogToSlackNotification;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
 use Illuminate\Http\Exceptions\PostTooLargeException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Session;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
     protected $dontReport = [
-        //
+      UserException::class,
+      NotFoundHttpException::class,
     ];
 
     protected $dontFlash = [
@@ -27,14 +30,12 @@ class Handler extends ExceptionHandler
 
     public function report(Exception $exception)
     {
-      if($exception instanceof UserException) return;
-
       $message = substr($exception->getMessage(), 0, 255);
       $traces = $exception->getTraceAsString();
 
       SysLog::create([
         'type'=>SysLog::TYPE_ERROR,
-        'message'=>$message,
+        'message'=>strlen($message) <= 0 ? get_class($exception) : $message,
         'data'=>[
           'console'=>app()->runningInConsole(),
           'session_id'=>Session::getId(),
@@ -95,6 +96,9 @@ class Handler extends ExceptionHandler
 
         else if($exception->getMessage() == 'Login required')
           return response()->json([ 'script'=>"window.location = '/login';" ]);
+
+        else if($exception instanceof MaintenanceModeException)
+          return response()->json([ 'error'=>0, 'message'=>'Maintenance mode' ]);
 
         else{
 

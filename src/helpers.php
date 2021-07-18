@@ -744,9 +744,9 @@ if(!function_exists('in_array_all')){
 
 if(!function_exists('save_image')){
 
-  function save_image($image, $disk = 'images', $dir = '', $urlprefix = ''){
+  function save_image($image, $disk = 'images', $dir = '', $relative = true){
 
-    $file_md5 = '';
+    $url = '';
     
     if(filter_var($image, FILTER_VALIDATE_URL)){
 
@@ -762,7 +762,8 @@ if(!function_exists('save_image')){
 
         if(strlen($dir) > 0) $dir = $dir . '/';
 
-        \Illuminate\Support\Facades\Storage::disk($disk)->put($dir . $file_md5, file_get_contents($image));
+        file_put_contents(\Illuminate\Support\Facades\Storage::disk($disk)->path($dir . $file_md5), file_get_contents($image));
+        $url = \Illuminate\Support\Facades\Storage::disk($disk)->url($dir . $file_md5);
       }
     }
     else if(is_file($image)){
@@ -779,11 +780,13 @@ if(!function_exists('save_image')){
 
       if(strlen($dir) > 0) $dir = $dir . '/';
 
-      //if(!\Illuminate\Support\Facades\Storage::disk($disk)->exists($dir . $file_md5))
-        \Illuminate\Support\Facades\Storage::disk($disk)->put($dir . $file_md5, file_get_contents($image));
+      file_put_contents(\Illuminate\Support\Facades\Storage::disk($disk)->path($dir . $file_md5), file_get_contents($image));
+      $url = \Illuminate\Support\Facades\Storage::disk($disk)->url($dir . $file_md5);
     }
 
-    return $urlprefix . $file_md5;
+    if($relative)
+      $url = str_replace(env('APP_URL'), '', $url);
+    return $url;
   }
 
 }

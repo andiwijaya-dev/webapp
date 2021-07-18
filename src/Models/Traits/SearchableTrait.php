@@ -4,7 +4,7 @@ namespace Andiwijaya\WebApp\Models\Traits;
 
 trait SearchableTrait{
 
-  /*protected $searchable = [];*/
+  /*protected $searchable = [ 'tag' ];*/
 
   /*protected $lookup_rules = [
     'city_id'=>'id',

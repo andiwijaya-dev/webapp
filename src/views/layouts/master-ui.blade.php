@@ -1,23 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>{{ $page['title'] ?? env('APP_NAME') }}</title>
+  <title>{{ $page->title ?? env('APP_NAME') }}</title>
 
   <meta name="viewport" content="width=device-width, user-scalable=no" />
-  <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta http-equiv=”Content-Type” content=”text/html;charset=UTF-8″>
-  <meta name="description" content="{!! ($page['description'] ?? '') !!}">
-  <meta name="keywords" content="{!! $page['keywords'] ?? '' !!}">
-  @if(isset($page['canonical']))<link rel="canonical" href="{!! $page['canonical'] !!}" />@endif
-  @if(isset($page['google_client_id']))<meta name="google-signin-client_id" content="{{ $page['google_client_id'] }}">@endif
-  @if(($page['noindex'] ?? false))<meta name="robots" content="noindex">@endif
-  @if(isset($page['og']['url']))
-    <meta property="og:url"           content="{{ $page['og']['url'] }}" />
-    <meta property="og:type"          content="{{ $page['og']['type'] ?? '' }}" />
-    <meta property="og:title"         content="{{ $page['og']['title'] ?? '' }}" />
-    <meta property="og:description"   content="{{ $page['og']['description'] ?? '' }}" />
-    <meta property="og:image"         content="{{ $page['og']['image'] ?? '' }}" />
-  @endif
+  <meta name="description" content="{!! ($page->meta_description ?? '') !!}">
+  <meta name="keywords" content="{!! $page->meta_keywords ?? '' !!}">
+  @if(isset($page->canonical_url))<link rel="canonical" href="{!! $page->canonical_url !!}" />@endif
+  @if(($page->no_index ?? false))<meta name="robots" content="noindex">@endif
+  @if(isset($page->og_url))<meta property="og:url" content="{{ $page->og_url }}" />@endif
+  @if(isset($page->og_type))<meta property="og:type" content="{{ $page->og_type ?? '' }}" />@endif
+  @if(isset($page->og_title))<meta property="og:title" content="{{ $page->og_title ?? '' }}" />@endif
+  @if(isset($page->og_description))<meta property="og:description"   content="{{ $page->og_description ?? '' }}" />@endif
+  @if(isset($page->og_image))<meta property="og:image" itemprop="image" content="{{ $page->og_image ?? '' }}" />@endif
 
   <link rel="stylesheet" media="print" href="/css/ui.min.css?v={{ assets_version() }}"/>
   <link rel="stylesheet" media="print" href="/css/all.min.css?v={{ assets_version() }}"/>

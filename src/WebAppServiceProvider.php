@@ -6,6 +6,7 @@ namespace Andiwijaya\WebApp;
 use Andiwijaya\WebApp\Console\Commands\WebCacheClear;
 use Andiwijaya\WebApp\Console\Commands\WebCacheLoad;
 use Andiwijaya\WebApp\Facades\WebCache;
+use Andiwijaya\WebApp\Http\Middleware\FormPostMiddleware;
 use Andiwijaya\WebApp\Http\Middleware\WebCacheExcludedMiddleware;
 use Andiwijaya\WebApp\Http\Middleware\WebCacheMiddleware;
 use Andiwijaya\WebApp\Services\AuthService;
@@ -15,6 +16,7 @@ use Andiwijaya\WebApp\Console\Commands\ScheduledTaskRun;
 use Andiwijaya\WebApp\Console\Commands\TestEmail;
 use Andiwijaya\WebApp\Exceptions\Handler;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
@@ -58,6 +60,7 @@ class WebAppServiceProvider extends ServiceProvider
 
     $this->app['router']->aliasMiddleware('web-cache-excluded', WebCacheExcludedMiddleware::class);
     $this->app['router']->pushMiddlewareToGroup('web', WebCacheMiddleware::class);
+    $this->app['router']->pushMiddlewareToGroup('web', FormPostMiddleware::class);
 
     $this->publishes(
       [
@@ -71,6 +74,10 @@ class WebAppServiceProvider extends ServiceProvider
     Sheet::macro('styleCells', function (Sheet $sheet, string $cellRange, array $style) {
       $sheet->getDelegate()->getStyle($cellRange)->applyFromArray($style);
     });
+
+    Blueprint::macro('importables', function(){
+      $this->timestamp('imported_at')->nullable();
+    });
   }
 
   public function handle(Request $request){
@@ -80,8 +87,8 @@ class WebAppServiceProvider extends ServiceProvider
       !$this->app->runningInConsole() &&
       $request->method() == 'GET' &&
       !$request->has('web-cache-reload') &&
-      !env('APP_DEBUG')){
-      
+      env('APP_ENV') == 'production'){
+
       if(Cache::has(WebCache::getKey($request))){
 
         global $kernel;

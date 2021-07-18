@@ -29,7 +29,7 @@ class TableView1Controller extends ActionableController
   protected $searchable = true;
 
   protected $view = 'andiwijaya::tableview1';
-  protected $items_per_page = 12;
+  protected $items_per_page = 18;
 
   public function view(Request $request)
   {
@@ -45,6 +45,8 @@ class TableView1Controller extends ActionableController
 
   public function load(Request $request)
   {
+    $this->id = $request->input('_tableview1_id');
+
     list($data, $page, $next, $builder) = $this->loadData($request);
 
     $html = [];
@@ -82,7 +84,7 @@ class TableView1Controller extends ActionableController
         $filters[$idx] = json_decode($filter, 1);
 
     $builder = $this->getBuilder($request);
-
+    
     $this->applyFilters($builder, $filters);
 
     if($request->has('search') && $this->searchable)
@@ -125,6 +127,15 @@ class TableView1Controller extends ActionableController
                 $query->orWhere($name, $operator, $value);
               else
                 $query->where($name, $operator, $value);
+              break;
+
+            case 'in':
+              $value = str_replace('(empty)', '', $value);
+              $value = explode(',', $value);
+              foreach($value as $val)
+                if(empty($val))
+                  $query->orWhereNull($name);
+              $query->orWhereIn($name, $value);
               break;
 
             case 'contains':
@@ -203,8 +214,8 @@ class TableView1Controller extends ActionableController
       $align = $column['align'] ?? '';
       $sortable = $column['sortable'] ?? false;
 
-      switch($datatype){
-
+      switch($datatype)
+      {
         case 'bool':
         case 'boolean':
           if(!$align) $align = 'align-center';
@@ -293,7 +304,20 @@ class TableView1Controller extends ActionableController
 
   protected function openFilters(Request $request)
   {
+    foreach($this->filters as $idx=>$filter){
+      if(($filter['type'] ?? '') == 'enum'){
+        if(method_exists($this, ($method = 'enum' . ucwords(Str::camel($filter['name']))))){
+          $enums = $this->{$method}($request);
+          $this->filters[$idx]['enums'] = $enums;
+        }
+        if(!is_array($this->filters[$idx]['enums'] ?? null) || count($this->filters[$idx]['enums'] ?? []) == 0)
+          $this->filters[$idx]['type'] = 'string';
+      }
+    }
+    View::share([ 'filters'=>$this->filters ]);
+
     $id = explode('|', $request->input('action'))[1] ?? null;
+    $value = null;
 
     Session::put('tableview1', $request->all());
 
@@ -309,6 +333,10 @@ class TableView1Controller extends ActionableController
         foreach($value['filters'] as $idx=>$exp){
 
           list($operand, $operator, $val) = explode('|', $exp);
+
+          if($operator == 'in'){
+            $val = explode(',', $val);
+          }
 
           $value['filters'][$idx] = [
             'operand'=>$operand,
@@ -343,7 +371,21 @@ class TableView1Controller extends ActionableController
       $operator = $params[($i * 3) + 1]['operator'];
       $value = $params[($i * 3) + 2]['value'] ?? '';
 
-      if($type == 'date') $value = date('Y-m-d', strtotime($value));
+      switch($type){
+        case 'date':
+          $value = date('Y-m-d', strtotime($value));
+          break;
+        case 'bool':
+          if(!$value) $value = 0;
+          break;
+      }
+
+      if($operator == 'in'){
+        $value = [];
+        for($i = 2 ; $i < count($params) ; $i++)
+          $value[] = $params[$i]['value'] ?? '';
+        $value = implode(',', $value);
+      }
 
       if($value !== ''){
         $filters[] = $operand . '|' . $operator . '|' . $value;
@@ -400,7 +442,7 @@ class TableView1Controller extends ActionableController
 
   public function __construct()
   {
-    if(!$this->id) $this->id = 'tableview1';
+    if(!$this->id) $this->id = 'tableview1-' . md5(get_class($this));
 
     parent::__construct();
   }

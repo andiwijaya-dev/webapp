@@ -312,6 +312,12 @@ EOT;
     return $this;
   }
 
+  public function download($path){
+    
+    $this->data[] = [ '_type'=>'download', 'path'=>$path ];
+    return $this;
+  }
+
 
   public function merge(array $data){
 

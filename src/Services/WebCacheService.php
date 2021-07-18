@@ -154,9 +154,6 @@ class WebCacheService{
       }
 
     }
-
-    Log::info("Web cache service clear all completed. (recache:{$recache})");
-
   }
 
   public function clearByTag($tag, $recache = false){
@@ -186,9 +183,6 @@ class WebCacheService{
         });
 
     }
-
-    Log::info("Web cache service clear tag completed. (count:{$count}, tag:{$tag}, recache:{$recache})");
-
   }
 
   public function clearByKey($key, $recache = false){
@@ -218,9 +212,6 @@ class WebCacheService{
         });
 
     }
-
-    Log::info("Web cache service clear key completed. (count:{$count}, key:{$key}, recache:{$recache})");
-
   }
 
 }

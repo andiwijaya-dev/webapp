@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Session;
 class AuthMiddleware{
 
   public function handle($request, Closure $next){
-
+    
     if(!in_array($request->path(), [ 'login' ])){
 
       Auth::load();
@@ -18,6 +18,7 @@ class AuthMiddleware{
       if(!Auth::user() || Auth::user()->status < User::STATUS_ACTIVE)
       {
         Auth::logout();
+        Session::put('after_login', $request->path());
         return $request->ajax() ? htmlresponse()->redirect('/login') : redirect('/login');
       }
     }

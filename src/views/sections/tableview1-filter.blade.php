@@ -6,10 +6,10 @@
 </div>
 <div class="modal-body relative">
   <div class="flex">
-    <span class="h-40h w-30p v-scrollable">
+    <span class="h-50h w-30p v-scrollable">
       <div data-type="tabs" data-container="#tableview1-tabcont" class="tabs-vertical">
         @foreach($filters as $idx=>$filter)
-          <div class="tab-item p-3 bb-3{{ (!isset($value['name']) && $idx == 0) || ($value['name'] ?? -1) == $filter['name'] ? ' active' : '' }}">{{ collect($columns)->where('name', $filter['name'])->first()['text'] ?? ($filter['text'] ?? $filter['name']) }}</div>
+          <div class="tab-item p-3 bb-3{{ (!isset($value['name']) && $idx == 0) || ($value['name'] ?? -1) == $filter['name'] ? ' active' : '' }}">{{ $filter['text'] ?? (collect($columns)->where('name', $filter['name'])->first()['text'] ?? $filter['text'] ?? $filter['name']) }}</div>
         @endforeach
       </div>
     </span>

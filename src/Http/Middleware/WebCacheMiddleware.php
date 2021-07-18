@@ -14,7 +14,8 @@ class WebCacheMiddleware{
       (count(config('webcache.hosts', [])) <= 0 || in_array($request->getHttpHost(), config('webcache.hosts', []))) &&
       $request->method() == 'GET' &&
       isset(($route = $request->route())->action['middleware']) && is_array($route->action['middleware']) &&
-      !in_array('web-cache-excluded', $route->action['middleware'])){
+      !in_array('web-cache-excluded', $route->action['middleware']) &&
+      env('APP_ENV') == 'production'){
 
       WebCache::store($request, $response);
     }

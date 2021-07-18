@@ -21,7 +21,7 @@ class ActionableController extends BaseController{
 
     $action = isset(($actions = explode('|', $request->input('action', 'view')))[0]) ? $actions[0] : '';
     $method = action2method($action);
-    if(method_exists($this, $method))
+    if(method_exists($this, $method) && $this->validateDocComment($request, $method))
       return call_user_func_array([ $this, $method ], func_get_args());
   }
 
@@ -33,7 +33,7 @@ class ActionableController extends BaseController{
 
     $action = isset(($actions = explode('|', $request->input('action', 'save')))[0]) ? $actions[0] : '';
     $method = action2method($action);
-    if(method_exists($this, $method))
+    if(method_exists($this, $method) && $this->validateDocComment($request, $method))
       return call_user_func_array([ $this, $method ], func_get_args());
   }
 
@@ -45,7 +45,7 @@ class ActionableController extends BaseController{
 
     $action = isset(($actions = explode('|', $request->input('action', 'open')))[0]) ? $actions[0] : '';
     $method = action2method($action);
-    if(method_exists($this, $method))
+    if(method_exists($this, $method) && $this->validateDocComment($request, $method))
       return call_user_func_array([ $this, $method ], func_get_args());
   }
 
@@ -57,7 +57,7 @@ class ActionableController extends BaseController{
 
     $action = isset(($actions = explode('|', $request->input('action', 'patch')))[0]) ? $actions[0] : '';
     $method = action2method($action);
-    if(method_exists($this, $method))
+    if(method_exists($this, $method) && $this->validateDocComment($request, $method))
       return call_user_func_array([ $this, $method ], func_get_args());
   }
 
@@ -90,5 +90,28 @@ class ActionableController extends BaseController{
     if($validator->fails()){
       exc(implode("<br />\n", $validator->errors()->all()));
     }
+  }
+
+  public function validateDocComment(Request $request, $method)
+  {
+    $comment_string = (new \ReflectionClass($this))->getMethod($method)->getDocComment();
+
+    $obj = [];
+    preg_match_all('/@(\w+) (.*)/', $comment_string, $matches);
+    if(isset($matches[1][0])){
+      foreach($matches[1] as $idx=>$key){
+        $obj[$key] = str_replace([ '\'', '"' ], '', $matches[2][$idx]);
+      }
+    }
+
+    if(isset($obj['method']) && strtolower($obj['method']) != strtolower($request->getMethod()))
+      return false;
+
+    if(isset($obj['ajax'])){
+      if($obj['ajax'] && !$request->ajax()) return false;
+      if(!$obj['ajax'] && $request->ajax()) return false;
+    }
+
+    return true;
   }
 }
