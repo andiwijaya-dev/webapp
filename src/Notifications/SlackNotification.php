@@ -42,8 +42,18 @@ class SlackNotification extends Notification
     if($this->detail)
       $message
         ->attachment(function($attachment){
-          $attachment->title('Detail')
-            ->content($this->detail);
+          $attachment->title('Detail');
+
+          if(is_array($this->detail)){
+            $fields = [];
+            foreach($this->detail as $key=>$value){
+              if(is_array($value)) $value = json_encode($value);
+              $fields[$key] = $value;
+            }
+            $attachment->fields($fields);
+          }
+          else
+            $attachment->content($this->detail);
         });
 
     return $message;

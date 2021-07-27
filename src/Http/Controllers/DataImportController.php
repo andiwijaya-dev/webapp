@@ -176,9 +176,8 @@ class DataImportController extends ActionableController
             if($required && $map_to_idx < 0)
               exc(__('controllers.import-dialog-missing-map'));
 
-            $value = $row[$map_to_idx] ?? '';
+            $value = trim($row[$map_to_idx] ?? '');
 
-            // Cast
             switch($column['cast'] ?? ''){
               case 'datetime':
                 $value = $this->castDatetime($value);
@@ -189,9 +188,19 @@ class DataImportController extends ActionableController
               case 'number':
                 $value = $this->castNumber($value);
                 break;
+              case 'upper':
+                $value = strtoupper($value);
+                break;
+              case 'lower':
+                $value = strtolower($value);
+                break;
+              case 'capitalize':
+                $value = ucwords(strtolower($value));
+                break;
             }
 
-            $obj[$key] = $value;
+            if($required || isset($row[$map_to_idx]))
+              $obj[$key] = $value;
           }
 
           $data[] = $obj;

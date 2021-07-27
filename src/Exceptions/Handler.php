@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
@@ -30,53 +31,46 @@ class Handler extends ExceptionHandler
 
     public function report(Exception $exception)
     {
+      if($exception instanceof NotFoundHttpException ||
+        $exception instanceof ValidationException)
+        return;
+
+      $errors = [];
+      if($exception instanceof UserException && count(($errors = $exception->getErrors())) <= 0)
+        return;
+
       $message = substr($exception->getMessage(), 0, 255);
       $traces = $exception->getTraceAsString();
+      $data = [
+        'console'=>app()->runningInConsole(),
+        'session_id'=>Session::getId(),
+        'method'=>Request::method(),
+        'url'=>Request::fullUrl(),
+        'errors'=>$errors,
+        'user_agent'=>$_SERVER['HTTP_USER_AGENT'] ?? '',
+        'remote_ip'=>$_SERVER['REMOTE_ADDR'] ?? '',
+        'input'=>Request::input(null),
+        'session'=>Session::get(null),
+        'traces'=>$traces,
+      ];
 
       SysLog::create([
         'type'=>SysLog::TYPE_ERROR,
         'message'=>strlen($message) <= 0 ? get_class($exception) : $message,
-        'data'=>[
-          'console'=>app()->runningInConsole(),
-          'session_id'=>Session::getId(),
-          'method'=>Request::method(),
-          'url'=>Request::fullUrl(),
-          'data'=>Request::input(null),
-          'traces'=>$traces,
-          'session'=>Session::get(null),
-          'user_agent'=>$_SERVER['HTTP_USER_AGENT'] ?? '',
-          'remote_ip'=>$_SERVER['REMOTE_ADDR'] ?? '',
-          'cookies'=>$_COOKIE ?? '',
-        ]
+        'data'=>$data
       ]);
 
       if(strlen(env('LOG_SLACK_WEBHOOK_URL')) > 0){
         try{
-          ScheduledTask::runOnce(function() use($message, $traces){
+          ScheduledTask::runOnce(function() use($message, $data){
             try{
               Notification::route('slack', env('LOG_SLACK_WEBHOOK_URL'))
-                ->notify(new SlackNotification($message, 'error', $traces));
+                ->notify(new SlackNotification($message, 'error', $data));
             }
-            catch(\Exception $ex){
-              SysLog::create([
-                'type'=>SysLog::TYPE_ERROR,
-                'message'=>substr($ex->getMessage(), 0, 255),
-                'data'=>[
-                  'traces'=>$ex->getTraceAsString(),
-                ]
-              ]);
-            }
+            catch(\Exception $ex){}
           });
         }
-        catch(\Exception $ex){
-          SysLog::create([
-            'type'=>SysLog::TYPE_ERROR,
-            'message'=>substr($ex->getMessage(), 0, 255),
-            'data'=>[
-              'traces'=>$ex->getTraceAsString(),
-            ]
-          ]);
-        }
+        catch(\Exception $ex){}
       }
     }
 
@@ -119,12 +113,21 @@ class Handler extends ExceptionHandler
 
           if($exception instanceof PostTooLargeException)
             return response()->json([ 'error'=>1, 'title'=>"Post data too large, maximum upload is " . ini_get('post_max_size') ]);
+          else if($exception instanceof ValidationException){
+            return response()->json([ 'error'=>1, 'title'=>implode("<br />", $exception->validator->errors()->all()) ]);
+          }
           else{
 
             if(basename($exception->getFile()) == 'FilesystemManager.php')
               return response()->json([ 'error'=>1, 'title'=>__('errors.storage-not-found'), 'description'=>implode("\n", $traces) ]);
-            else
-              return response()->json([ 'error'=>1, 'title'=>$exception->getMessage(), 'description'=>implode("\n", $traces) ]);
+            else{
+
+              $title = env('APP_ENV') == 'production' ?
+                ($exception instanceof UserException ? $exception->getMessage() : __('Internal server error'))
+                :
+                $exception->getMessage();
+              return response()->json([ 'error'=>1, 'title'=>$title, 'description'=>htmlspecialchars(implode("\n", $traces)) ]);
+            }
           }
 
         }

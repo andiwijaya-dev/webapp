@@ -132,7 +132,7 @@ trait LoggedTraitV3{
 
       if($this->log &&
         (count($this->updates) > 0 &&
-          !app()->runningInConsole() &&
+          /*!app()->runningInConsole() &&*/
           (!isset($options['log']) || $options['log']))){
 
         $type = $exists ? Log::TYPE_UPDATE : Log::TYPE_CREATE;

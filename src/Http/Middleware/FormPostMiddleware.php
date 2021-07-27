@@ -13,7 +13,6 @@ class FormPostMiddleware
 
       $merged = [];
       $unsets = [];
-
       foreach($request->keys() as $key){
         if(strpos($key, ':') !== false){
 
@@ -66,6 +65,11 @@ class FormPostMiddleware
 
       case 'number':
         $value = floatval(str_replace([ ',', ' ' ], '', $value));
+        break;
+      case 'date':
+        $value = date('Y-m-d', strtotime($value));
+      case 'datetime':
+        $value = date('Y-m-d H:i:s', strtotime($value));
         break;
     }
 

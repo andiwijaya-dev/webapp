@@ -21,30 +21,12 @@ class Log extends Model{
     'data'=>'array'
   ];
 
+  const TYPE_REMOVE = -1;
   const TYPE_CREATE = 1;
   const TYPE_UPDATE = 2;
-  const TYPE_REMOVE = -1;
-
-  const TYPE_INVALID = -4;
-  const TYPE_DECLINED = -3;
-  const TYPE_CANCELLED = -2;
   const TYPE_IMPORT = 3;
-  const TYPE_PAYMENT = 8; // For m2w and motorcycle means "request submitted"
-  const TYPE_PROCESS = 9;
-  const TYPE_SURVEY = 10;
-  const TYPE_APPROVED = 11;
-  const TYPE_FUNDING = 12;
-  const TYPE_FUNDED = 13;
-
-  const TYPE_DOWNLOAD = 31;
-  const TYPE_UPLOAD = 32;
-  const TYPE_EXPORT = 34;
-  const TYPE_RESET_PASSWORD = 35;
-  const TYPE_CHANGE_PASSWORD = 36;
-
-  const TYPE_LOGIN_SUCCESS = 51;
-  const TYPE_LOGIN_ATTEMPT = 52;
-  const TYPE_REGISTER = 53;
+  const TYPE_EXPORT = 4;
+  const TYPE_REORDER = 5;
 
 
   public function __construct(array $attributes = []){
@@ -65,10 +47,9 @@ class Log extends Model{
 
   }
 
-  public function user(){
-
-    return $this->hasOne('Andiwijaya\WebApp\Models\User', 'id', 'user_id');
-
+  public function user()
+  {
+    return $this->belongsTo(User::class, 'user_id');
   }
 
 

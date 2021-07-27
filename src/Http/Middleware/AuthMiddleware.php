@@ -21,6 +21,11 @@ class AuthMiddleware{
         Session::put('after_login', $request->path());
         return $request->ajax() ? htmlresponse()->redirect('/login') : redirect('/login');
       }
+
+      if(!in_array($request->path(), [ 'login', 'logout' ])){
+        Auth::user()->last_url = '/' . $request->path();
+        Auth::user()->save();
+      }
     }
 
     return $next($request);

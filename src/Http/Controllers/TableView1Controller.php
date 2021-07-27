@@ -201,7 +201,7 @@ class TableView1Controller extends ActionableController
     return $response;
   }
 
-  protected function renderHeader()
+  protected function renderHeader(array $options = [])
   {
     $html = [];
     $columns = $this->columns;
@@ -212,7 +212,7 @@ class TableView1Controller extends ActionableController
       $text = $column['text'] ?? ($column['name'] ?? '');
       $datatype = $column['datatype'] ?? 'text';
       $align = $column['align'] ?? '';
-      $sortable = $column['sortable'] ?? false;
+      $sortable = $options['sortable'] ?? ($column['sortable'] ?? false);
 
       switch($datatype)
       {
@@ -234,6 +234,7 @@ class TableView1Controller extends ActionableController
       $html[] = "<div class=\"table-resize\"></div>";
       $html[] = "</th>";
     }
+    $html[] = '<th width="100%"></th>';
 
     return implode('', $html);
   }
@@ -241,7 +242,7 @@ class TableView1Controller extends ActionableController
   protected function renderItem($obj){
 
     $id = $obj['id'] ?? '';
-    $tag = "<tr data-id=\"{$id}\">";
+    $tag = "<tr data-id=\"{$id}\" class='tableview1-row'>";
     foreach($this->columns as $column){
 
       $name = $column['name'] ?? '';
@@ -254,6 +255,7 @@ class TableView1Controller extends ActionableController
 
         case 'bool':
         case 'boolean':
+        case 'sort-order':
           if(!$align) $align = 'align-center';
           break;
 
@@ -263,11 +265,13 @@ class TableView1Controller extends ActionableController
           break;
 
         case 'date':
-          $text = date('j M Y', strtotime($text));
+          $dateformat = $column['dateformat'] ?? 'j M Y';
+          $text = date('Y', strtotime($text)) > 1970 ? date($dateformat, strtotime($text)) : '';
           break;
 
         case 'datetime':
-          $text = date('j M Y H:i', strtotime($text));
+          $dateformat = $column['dateformat'] ?? 'j M Y H:i';
+          $text = date('Y', strtotime($text)) > 1970 ? date($dateformat, strtotime($text)) : '';
           break;
       }
 
@@ -280,6 +284,14 @@ class TableView1Controller extends ActionableController
             $tag .= "<label class='ellipsis'><span class='fa fa-check-circle cl-green'></span></label>";
           else
             $tag .= "<label class='ellipsis'><span class='fa fa-minus-circle cl-gray-500'></span></label>";
+          break;
+
+        case 'sort-order':
+          $tag .= "<span class=\"fa fa-grip-vertical cl-primary p-1\" data-event
+        data-mousedown-start-reorder=\"parent(.tableview1-row)|tableview1-row\"></span>";
+          $tag .= "<span class=\"fa fa-arrow-up cl-primary p-1\" data-event data-click-reorder-up='parent(.tableview1-row)'></span>";
+          $tag .= "<span class=\"fa fa-arrow-down cl-primary p-1\" data-event data-click-reorder-down='parent(.tableview1-row)'></span>";
+          $tag .= "<input type='hidden' name='sort_order[]' value='{$obj->id}' />";
           break;
 
         default:

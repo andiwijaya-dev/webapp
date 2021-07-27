@@ -20,6 +20,12 @@ class HTMLResponse implements Responsable {
     $this->headers['Content-Type'] = 'application/json';
   }
 
+  public function addImage($target, $image_url){
+
+    $this->data[] = [ '_type'=>'method', 'method'=>'addImage', 'target'=>$target, 'params'=>[ $image_url ] ];
+    return $this;
+  }
+
   public function append($target, $html, $options = []){
 
     $this->data[] = [ '_type'=>'html', 'html'=>$html, 'mode'=>'append', 'target'=>$target, 'options'=>$options ];
@@ -65,6 +71,12 @@ class HTMLResponse implements Responsable {
   public function remove($target, $parent = '', $options = []){
 
     $this->data[] = [ '_type'=>'remove', 'parent'=>$parent, 'target'=>$target, 'options'=>$options ];
+    return $this;
+  }
+
+  public function update($target, array $options = [])
+  {
+    $this->data[] = [ '_type'=>'method', 'method'=>'update', 'target'=>$target, 'options'=>$options ];
     return $this;
   }
 

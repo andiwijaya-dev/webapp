@@ -22,9 +22,10 @@ class User extends Model
   ];
 
   protected $casts = [
-    'last_login_at'=>'datetime'
+    'last_login_at'=>'datetime',
+    'configs'=>'array'
   ];
 
-  protected $fillable = [ 'status', 'code', 'name', 'email', 'avatar_url', 'require_password_change', 'role',
-    'last_login_at' ];
+  protected $fillable = [ 'status', 'code', 'name', 'email', 'avatar_url', 'require_password_change', 'role', 'configs',
+    'last_login_at', 'last_url' ];
 }

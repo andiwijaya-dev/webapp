@@ -14,18 +14,11 @@ if(!function_exists('is_assoc')){
 }
 
 if (! function_exists('exc')) {
-  function exc($message = '', $debug = false)
+  function exc($message = '', $detail = [], $code = 0, $previous = null)
   {
-    $text = env('APP_DEBUG') && $debug != false ? $debug : $message;
-    if(is_array($text)) $text = json_encode($text);
-    
-    throw new \Andiwijaya\WebApp\Exceptions\UserException(($debug != false ? $message . ' ' : '') . $text);
+    if(is_array($message)) $message = json_encode($message);
 
-  }
-
-  function exs($message, $vars){
-
-    throw new \Exception($message . ": " . json_encode($vars, JSON_PRETTY_PRINT));
+    throw new \Andiwijaya\WebApp\Exceptions\UserException($message, $detail, $code, $previous);
   }
 }
 
@@ -1742,7 +1735,9 @@ if(!function_exists('view_content')){
   function view_content($view, $data = [], $mergeData = [], $section = 'content'){
 
     return request()->ajax() ?
-      htmlresponse()->html('.' . $section, view($view, $data, $mergeData)->renderSections()[$section] ?? view($view, $data, $mergeData)->render()) :
+      htmlresponse()
+        ->html('.' . $section, view($view, $data, $mergeData)->renderSections()[$section] ?? view($view, $data, $mergeData)->render())
+        ->html('.modal-cont', ''):
       view($view, $data, $mergeData);
   }
 }
@@ -1759,5 +1754,12 @@ if(!function_exists('mask_email_address')){
       $result = $left . '@' . $right;
     }
     return $result;
+  }
+}
+
+if(!function_exists('mask_mobile_number')){
+  function mask_mobile_number($number, $length = 6){
+
+    return substr($number, 0, strlen($number) - 6) . 'xxxxxx';
   }
 }

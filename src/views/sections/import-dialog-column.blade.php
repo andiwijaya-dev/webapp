@@ -37,7 +37,7 @@
                     <option value="" selected disabled></option>
                     @foreach($data_columns as $data_column)
                       <option value="{{ $data_column }}"
-                        {{ $data_column == ($column['text'] ?? $key) || in_array($data_column, $column['mappings'] ?? []) ? 'selected' : '' }}>
+                        {{ strtolower($data_column) == strtolower(($column['text'] ?? $key)) || in_array($data_column, $column['mappings'] ?? []) ? 'selected' : '' }}>
                         {{ $data_column }}
                       </option>
                     @endforeach

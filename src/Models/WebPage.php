@@ -10,5 +10,5 @@ class WebPage extends Model
 
   protected $fillable = [ 'title', 'meta_description', 'meta_keywords', 'footer_article',
     'og_type', 'og_title', 'og_description', 'og_image', 'og_site_name', 'og_updated_time',
-    'bottom_bar', 'footer', 'header' ];
+    'back', 'bottom_bar', 'footer', 'header' ];
 }

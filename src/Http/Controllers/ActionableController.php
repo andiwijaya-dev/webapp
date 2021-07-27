@@ -49,7 +49,7 @@ class ActionableController extends BaseController{
       return call_user_func_array([ $this, $method ], func_get_args());
   }
 
-  public function patch(Request $request){
+  public function update(Request $request){
 
     $this->preload($request);
 
