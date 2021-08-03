@@ -28,4 +28,22 @@ class User extends Model
 
   protected $fillable = [ 'status', 'code', 'name', 'email', 'avatar_url', 'require_password_change', 'role', 'configs',
     'last_login_at', 'last_url' ];
+
+  public function preDelete()
+  {
+    if($this->is_system > 0)
+      exc(__('Unable to remove system user'));
+  }
+
+  public function pathAllowed($path)
+  {
+    return true;
+  }
+
+  public function can($action){}
+
+  public function filterActions(array $actions)
+  {
+    return $actions;
+  }
 }

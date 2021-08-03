@@ -13,7 +13,7 @@ class CustomTransportManager extends TransportManager{
 
     $configs = Config::where('key', 'like', 'smtp%')->get()->groupBy('key');
 
-    $this->app['config']['mail'] = [
+    $mail = [
       'driver'        => config('mail.driver'),
       'host'          => $configs['smtp.host'][0]->value ?? config('mail.host'),
       'port'          => $configs['smtp.port'][0]->value ?? config('mail.port'),
@@ -27,6 +27,14 @@ class CustomTransportManager extends TransportManager{
       'sendmail'      => config('mail.sendmail'),
       'pretend'       => config('mail.pretend')
     ];
+
+    if(isset($configs['smtp.reply_to']))
+      $mail['reply_to'] = [
+        'address'=>$configs['smtp.reply_to'][0]->value,
+        'name'=> config('mail.from.name')
+      ];
+
+    $this->app['config']['mail'] = $mail;
   }
 
 }

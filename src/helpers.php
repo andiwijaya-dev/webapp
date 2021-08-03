@@ -1763,3 +1763,9 @@ if(!function_exists('mask_mobile_number')){
     return substr($number, 0, strlen($number) - 6) . 'xxxxxx';
   }
 }
+
+if(!function_exists('ctlid')){
+  function ctlid($prefix = 'ctl'){
+    return $prefix . substr(md5(uniqid()), 0, 7);
+  }
+}

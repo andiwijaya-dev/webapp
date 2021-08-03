@@ -7,11 +7,15 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\ValidationRuleParser;
 use function foo\func;
 
 class ActionableController extends BaseController{
 
   protected $request;
+
+  protected $request_inputs = [];
 
   public function index(Request $request){
 
@@ -27,14 +31,14 @@ class ActionableController extends BaseController{
 
   public function store(Request $request){
 
+    $request = $this->prepareRequest($request);
     $this->preload($request);
-
     $this->request = $request;
 
     $action = isset(($actions = explode('|', $request->input('action', 'save')))[0]) ? $actions[0] : '';
     $method = action2method($action);
     if(method_exists($this, $method) && $this->validateDocComment($request, $method))
-      return call_user_func_array([ $this, $method ], func_get_args());
+      return call_user_func_array([ $this, $method ], [ $request ]);
   }
 
   public function show(Request $request, $id){
@@ -87,9 +91,8 @@ class ActionableController extends BaseController{
   {
     $validator = Validator::make($request->all(), $rules, $messages, $customAttributes);
 
-    if($validator->fails()){
-      exc(implode("<br />\n", $validator->errors()->all()));
-    }
+    if($validator->fails())
+      throw new ValidationException($validator);
   }
 
   public function validateDocComment(Request $request, $method)
@@ -113,5 +116,98 @@ class ActionableController extends BaseController{
     }
 
     return true;
+  }
+
+  public function prepareRequest(Request $request)
+  {
+
+    if(is_array($this->request_inputs)){
+
+      foreach($this->request_inputs as $key=>$specs){
+        $params = ValidationRuleParser::parse($specs);
+
+        switch(strtolower($params[0])){
+
+          case 'image':
+            $this->prepareImage($request, $key, $params);
+            break;
+
+          case 'date':
+            $request->merge([ $key=>date('Y-m-d', strtotime($request->input($key))) ]);
+            break;
+            
+          case 'datetime':
+            $request->merge([ $key=>date('Y-m-d H:i:s', strtotime($request->input($key))) ]);
+            break;
+
+          case 'number':
+          case 'numeric':
+            $request->merge([ $key=>str_replace([ ',', ' ' ], '', $request->input($key)) ]);
+            break;
+
+        }
+      }
+    }
+
+    return $request;
+  }
+
+  public function prepareImage(Request $request, $key, $params){
+
+    if($request->hasFile($key)){
+
+      foreach(($params[1] ?? []) as $param){
+        $param = explode('=', $param);
+        switch($param[0]){
+          case 'ratio': $ratio = $param[1]; break;
+          case 'text': $text = $param[1]; break;
+          case 'target': $target = $param[1]; break;
+          case 'max_width': $max_width = $param[1]; break;
+          case 'max_height': $max_height = $param[1]; break;
+          case 'min_width': $min_width = $param[1]; break;
+          case 'min_height': $min_height = $param[1]; break;
+          case 'max_size': $max_size = $param[1]; break;
+          case 'as': $as = $param[1]; break;
+        }
+      }
+
+      if($as ?? false){
+
+        $target = explode('/', $target ?? '');
+        $disk = $target[0] ?? '';
+        $dir = $target[1] ?? '';
+        list($width, $height, $type, $attr) = getimagesize($request->file($key));
+
+        if(isset($ratio)){
+          list($ratio1, $ratio2) = explode('/', $ratio);
+          if($width / $height != $ratio1 / $ratio2)
+            exc(__('validation.dimensions', [ 'attribute'=>$text ?? $key ]));
+        }
+        if(isset($max_width)){
+          if($width > $max_width)
+            exc(__('validation.dimensions', [ 'attribute'=>$text ?? $key ]));
+        }
+        if(isset($max_height)){
+          if($height > $max_height)
+            exc(__('validation.dimensions', [ 'attribute'=>$text ?? $key ]));
+        }
+        if(isset($min_width)){
+          if($width < $min_width)
+            exc(__('validation.dimensions', [ 'attribute'=>$text ?? $key ]));
+        }
+        if(isset($min_height)){
+          if($height < $min_height)
+            exc(__('validation.dimensions', [ 'attribute'=>$text ?? $key ]));
+        }
+        if(isset($max_size)){
+          $kb = filesize($request->file($key)) / 1024;
+          if($kb > $max_size)
+            exc(__('validation.max.file', [ 'attribute'=>$text ?? $key, 'max'=>$max_size ]));
+        }
+        
+        $path = save_image($request->file($key), $disk, $dir);
+        $request->merge([ $as=>$path ]);
+      }
+    }
   }
 }

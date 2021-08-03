@@ -31,42 +31,49 @@
   @endif
 @endsection
 
+@section('header-row-1')
+  <div>
+    <div class="flex valign-top">
+      <div>
+        <h1 class="font-size-6">{{ $title ?? 'Untitled' }}</h1>
+      </div>
+      <span class="options-area">
+        @yield('options-area')
+      </span>
+    </div>
+  </div>
+@endsection
+
 @section('content')
 
   <form method="post" class="async" action="">
 
-    <div class="sticky bg-gray-100" data-event data-sticky-after=".header">
-      <div class="mb-3 pt-3">
-        <div class="flex valign-top">
-          <div>
-            <h1 class="font-size-6">{{ $title ?? 'Untitled' }}</h1>
-            <button name="action" value="load" class="hidden"></button>
-          </div>
-          <span class="options-area">
-          @yield('options-area')
-          </span>
-        </div>
-      </div>
+    <div class="sticky bg-gray-100 py-3 pb-0" data-event data-sticky-after=".header">
+      @yield('header-row-1')
       <div class="my-2 h-scrollable nowrap filterbar">
         @yield('filterbar')
       </div>
+      <button name="action" value="load" class="hidden"></button>
+      <div class="table-head rt-1">
+        <table>
+          <thead>
+          <tr>
+            {!! $column_html ?? '' !!}
+          </tr>
+          </thead>
+        </table>
+      </div>
     </div>
 
-    <div class="my-2">
-      <div data-type="table" id="{{ $id }}" data-event data-init-click="[value=load]">
-        <div class="table-head">
-          <table>
-            <thead>
-              <tr>
-                {!! $column_html ?? '' !!}
-              </tr>
-            </thead>
-          </table>
-        </div>
-        <div class="table-body h-scrollable nh-90h"></div>
-        <div class="table-foot"></div>
+    <div>
+      <div data-type="table" id="{{ $id }}" data-event data-init-click="[value=load]" data-table-head=".table-head">
+        <div class="table-body h-scrollable nh-100h"></div>
         <input type="hidden" name="_tableview1_id" value="{{ $id }}" />
       </div>
+    </div>
+
+    <div class="sticky sticky-bottom bg-white">
+      <div class="table-foot"></div>
     </div>
 
   </form>

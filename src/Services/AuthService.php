@@ -20,11 +20,13 @@ class AuthService{
 
   public function load()
   {
-    $this->user = Session::get('user_id') > 0 ? User::find(Session::get('user_id')) : null;
+    $class = $this->getBuilder();
+    
+    $this->user = Session::get('user_id') > 0 ? $class::find(Session::get('user_id')) : null;
     
     if(!$this->user && Cookie::has('keep_login'))
     {
-      $this->user = User::where('remember_token', Cookie::get('keep_login'))->first();
+      $this->user = $class::where('remember_token', Cookie::get('keep_login'))->first();
       if($this->user)
         Cookie::queue('keep_login', $this->user->remember_token, 1440);
     }
@@ -35,7 +37,8 @@ class AuthService{
     $user_id = $params['user_id'] ?? null;
     $password = $params['password'] ?? null;
 
-    $user = User::where('code', '=', $user_id)
+    $class = $this->getBuilder();
+    $user = $class::where('code', '=', $user_id)
       ->orWhere('email', '=', $user_id)
       ->first();
 
@@ -81,5 +84,10 @@ class AuthService{
   public function user()
   {
     return $this->user;
+  }
+
+  protected function getBuilder()
+  {
+    return config('auth.providers.users.model', User::class);
   }
 }

@@ -37,10 +37,28 @@ class HTMLResponse implements Responsable {
     $this->data[] = [ '_type'=>'html', 'html'=>$html, 'mode'=>'prepend', 'target'=>$target, 'options'=>$options ];
     return $this;
   }
+  
+  public function attr($target, $attr = [])
+  {
+    $this->data[] = [ '_type'=>'attr', 'target'=>$target, 'attr'=>$attr ];
+    return $this;
+  }
+
+  public function click($target)
+  {
+    $this->data[] = [ '_type'=>'click', 'target'=>$target ];
+    return $this;
+  }
 
   public function close($target, array $params = []){
 
     $this->data[] = [ '_type'=>'method', 'method'=>'close', 'target'=>$target, 'params'=>$params ];
+    return $this;
+  }
+  
+  public function css($target, array $css)
+  {
+    $this->data[] = [ '_type'=>'css', 'css'=>$css, 'target'=>$target ];
     return $this;
   }
 
@@ -143,6 +161,17 @@ class HTMLResponse implements Responsable {
       'text'=>$text,
       'description'=>$description,
       'options'=>$options
+    ];
+    return $this;
+  }
+
+  public function toast($title, $icon = '', $type = ''){
+
+    $this->data[] = [
+      '_type'=>'toast',
+      'title'=>$title,
+      'type'=>$type,
+      'icon'=>$icon
     ];
     return $this;
   }

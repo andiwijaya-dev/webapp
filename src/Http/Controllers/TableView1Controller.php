@@ -29,7 +29,8 @@ class TableView1Controller extends ActionableController
   protected $searchable = true;
 
   protected $view = 'andiwijaya::tableview1';
-  protected $items_per_page = 18;
+  protected $items_per_page = 20;
+  protected $meta_row_click;
 
   public function view(Request $request)
   {
@@ -60,7 +61,7 @@ class TableView1Controller extends ActionableController
 
     if($page <= 1)
       $response->value("#{$this->id}", $html, [ 'next_page'=>$next ])
-        ->html("#{$this->id} .table-foot", $this->renderFooter($builder));
+        ->html(".table-foot", $this->renderFooter($builder));
     else
       $response->append("#{$this->id}", $html, [ 'next_page'=>$next ]);
 
@@ -304,6 +305,7 @@ class TableView1Controller extends ActionableController
       }
       $tag .= "</td>";
     }
+    $tag .= '<td width="100%"></td>';
     $tag .= "</tr>";
     
     return $tag;
