@@ -20,6 +20,7 @@ class DataImportController extends ActionableController
   protected $title;
   protected $description = 'Masukkan file excel, csv atau zip ke dalam box dibawah ini, lalu tekan tombol lanjut.';
   protected $template_name;
+  protected $files;
     
   protected $columns = [
     'name'=>[ 'text'=>'Name', 'required'=>true, 'mappings'=>[ 'Name', 'name' ], 'cast'=>'' ]
@@ -176,7 +177,7 @@ class DataImportController extends ActionableController
             if($required && $map_to_idx < 0)
               exc(__('controllers.import-dialog-missing-map'));
 
-            $value = trim($row[$map_to_idx] ?? '');
+            $value = trim($row[$map_to_idx] ?? false);
 
             switch($column['cast'] ?? ''){
               case 'datetime':
@@ -184,6 +185,9 @@ class DataImportController extends ActionableController
                 break;
               case 'date':
                 $value = $this->castDate($value);
+                break;
+              case 'bool':
+                $value = $this->castBool($value);
                 break;
               case 'number':
                 $value = $this->castNumber($value);
@@ -199,7 +203,7 @@ class DataImportController extends ActionableController
                 break;
             }
 
-            if($required || isset($row[$map_to_idx]))
+            //if($required || isset($row[$map_to_idx]))
               $obj[$key] = $value;
           }
 
@@ -208,9 +212,9 @@ class DataImportController extends ActionableController
       }
     }
 
-    $files = $imports['files'];
+    $this->files = $imports['files'];
 
-    $this->processData($request, $data, $files);
+    $response = $this->processData($request, $data, $this->files);
 
     View::share([
       'result_new'=>$this->result_new,
@@ -219,7 +223,9 @@ class DataImportController extends ActionableController
       'result_logs'=>$this->result_logs,
     ]);
 
-    return htmlresponse()
+    if(!$response) $response = htmlresponse();
+
+    return $response
       ->html('#import-dialog', view('andiwijaya::sections.import-dialog-completed')->render())
       ->script("ui('#import-dialog').modal_resize()");
   }
@@ -334,6 +340,70 @@ class DataImportController extends ActionableController
 
   private function castNumber($value){
     $value = floatval(str_replace([ ',' ], '', $value));
+    return $value;
+  }
+
+  private function castBool($value){
+    $value = $value > 0 ? 1 : 0;
+    return $value;
+  }
+  
+  protected function extractImage($key, $obj, $eobj, array $options)
+  {
+    $dir = $options['dir'] ?? '';
+    $ratio = $options['ratio'] ?? '';
+    $max_width = $options['max_width'] ?? '';
+    $max_height = $options['max_height'] ?? '';
+    $min_width = $options['min_width'] ?? '';
+    $min_height = $options['min_height'] ?? '';
+    $max_size = $options['max_size'] ?? '';
+    $text = $options['text'] ?? $key;
+
+    $value = $eobj->{$key} ?? '';
+    if(isset($obj[$key]) && $obj[$key]){
+      $source_path = $this->files[$obj[$key]] ?? false;
+
+      if($source_path){
+
+        list($width, $height, $type, $attr) = getimagesize($source_path);
+
+        if($ratio){
+          list($ratio1, $ratio2) = explode('/', $ratio);
+          if($width / $height != $ratio1 / $ratio2)
+            $this->result_logs[] = __('validation.dimensions', [ 'attribute'=>$text ]);
+        }
+        if($max_width > 0){
+          if($width > $max_width)
+            $this->result_logs[] = __('validation.dimensions', [ 'attribute'=>$text ]);
+        }
+        if($max_height > 0){
+          if($height > $max_height)
+            $this->result_logs[] = __('validation.dimensions', [ 'attribute'=>$text ]);
+        }
+        if($min_width > 0){
+          if($width < $min_width)
+            $this->result_logs[] = __('validation.dimensions', [ 'attribute'=>$text ]);
+        }
+        if($min_height > 0){
+          if($height < $min_height)
+            $this->result_logs[] = __('validation.dimensions', [ 'attribute'=>$text ]);
+        }
+        if($max_size > 0){
+          $kb = filesize($source_path) / 1024;
+          if($kb > $max_size)
+            $this->result_logs[] = __('validation.max.file', [ 'attribute'=>$text, 'max'=>$max_size ]);
+        }
+
+        $ext = explode('.', $source_path)[1] ?? '';
+        $target_path = Storage::disk('images')->path($dir . '/' . md5_file($source_path) . ($ext ? '.' . $ext : ''));
+        exec("cp {$source_path} {$target_path}");
+        $image_url = Storage::disk('images')->url($dir . '/' . md5_file($source_path) . ($ext ? '.' . $ext : ''));
+        $value = str_replace(env('APP_URL'), '', $image_url);
+      }
+      else
+        $this->result_logs[] = "Image {$source_path} not found";
+    }
+    
     return $value;
   }
 }

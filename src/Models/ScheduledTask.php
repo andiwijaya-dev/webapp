@@ -53,6 +53,7 @@ class ScheduledTask extends Model
   protected $casts = [
     'repeat_custom'=>'array', // { every:{ n:1, unit:"day" }, max_count:10, except:{ dates:[], day:[] } }
     'updated_at'=>'datetime',
+    'last_run_at'=>'datetime',
     'remove_after_completed'=>0
   ];
 
@@ -118,6 +119,9 @@ class ScheduledTask extends Model
     $this->status = self::STATUS_RUNNING;
     $this->save();
 
+    if(count($this->results) > 10)
+      $this->results()->delete();
+
     $result = $this->results()->create([
       'status'=>self::STATUS_RUNNING,
       'started_at'=>Carbon::now()->format('Y-m-d H:i:s'),
@@ -161,6 +165,7 @@ class ScheduledTask extends Model
       $result->save();
 
       $this->status = $result->status;
+      $this->last_run_at = Carbon::now();
 
       $this->save();
     }
@@ -309,6 +314,13 @@ class ScheduledTask extends Model
     if(!$at) $task->runInBackground();
 
     return $task;
+  }
+
+  public function __construct(array $attributes = [])
+  {
+    $this->log = false;
+
+    parent::__construct($attributes);
   }
 
 

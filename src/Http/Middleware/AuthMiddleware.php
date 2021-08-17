@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\View;
 class AuthMiddleware{
 
   public function handle(Request $request, Closure $next){
-    
+
     if(!in_array($request->path(), [ 'login' ])){
 
       Auth::load();

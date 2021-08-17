@@ -14,7 +14,7 @@
         <table>
           <thead>
             <tr>
-              <th width="150px">Column<div class="table-resize"></div></th>
+              <th width="200px">Column<div class="table-resize"></div></th>
               <th width="100px">Required<div class="table-resize"></div></th>
               <th width="200px">Map To<div class="table-resize"></div></th>
               <th width="100%"></th>
@@ -28,13 +28,19 @@
             @foreach($columns as $key=>$column)
             <tr>
               <td>
-                <label class="ellipsis">{{ $column['text'] ?? $column['name'] }}</label>
+                <label class="ellipsis">
+                  {{ $column['text'] ?? $column['name'] }}
+                  <p class="mt-1 font-size-1 cl-gray-500 wrap-pre">{{ $column['description'] ?? '' }}</p>
+                </label>
               </td>
               <td><label class="ellipsis">{{ ($column['required'] ?? false) ? 'Required' : 'Optional' }}</label></td>
               <td>
                 <div data-type="dropdown">
                   <select name="{{ $key }}">
                     <option value="" selected disabled></option>
+                    @if(!($column['required'] ?? false))
+                      <option value="" selected>Tidak Digunakan</option>
+                    @endif
                     @foreach($data_columns as $data_column)
                       <option value="{{ $data_column }}"
                         {{ strtolower($data_column) == strtolower(($column['text'] ?? $key)) || in_array($data_column, $column['mappings'] ?? []) ? 'selected' : '' }}>

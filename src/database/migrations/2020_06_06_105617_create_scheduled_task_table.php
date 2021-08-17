@@ -31,6 +31,7 @@ class CreateScheduledTaskTable extends Migration
       $table->boolean('remove_after_completed')->nullable()->default(0);
 
       $table->timestamps();
+      $table->timestamp('last_run_at')->nullable();
     });
   }
 

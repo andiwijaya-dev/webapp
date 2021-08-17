@@ -15,7 +15,12 @@ class ActionableController extends BaseController{
 
   protected $request;
 
-  protected $request_inputs = [];
+  protected $request_inputs = [
+    '_image'=>'image:ratio=1/1,target=images/categories,min_width=480,as=image_url,text=gambar icon,max_size=100',
+    '_datetime'=>'datetime',
+    '_date'=>'date',
+    '_numeric'=>'numeric',
+  ];
 
   public function index(Request $request){
 

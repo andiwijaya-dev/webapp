@@ -32,6 +32,29 @@ class TableView1Controller extends ActionableController
   protected $items_per_page = 20;
   protected $meta_row_click;
 
+  protected function columnOptions($obj, $column)
+  {
+    return <<<EOF
+<div class="align-center">
+  <a href="/module/{$obj['id']}" class="async" data-history="none"><span class="fa fa-bars cl-gray-400 p-1"></span></a>
+  <a href="/module/{$obj['id']}" class="async" data-history="none" data-method="DELETE" data-confirm="Hapus?"><span class="fa fa-times cl-gray-300 p-1"></span></a>
+</div>
+EOF;
+  }
+
+  protected function columnImage($obj, $column)
+  {
+    return <<<EOF
+<div class="p-1">
+  <div data-type="img" class="b-3 rounded-2 ratio-1-1 relative" data-src="{$obj->image_url}">
+    <div class="dock-center no-image-img">
+      <span class="fa fa-image font-size-6 cl-gray-300"></span>
+    </div>
+  </div>
+</div>
+EOF;
+  }
+
   public function view(Request $request)
   {
     View::share([

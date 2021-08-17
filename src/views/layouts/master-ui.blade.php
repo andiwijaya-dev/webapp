@@ -7,7 +7,7 @@
   <meta http-equiv=”Content-Type” content=”text/html;charset=UTF-8″>
   <meta name="description" content="{!! ($page->meta_description ?? '') !!}">
   <meta name="keywords" content="{!! $page->meta_keywords ?? '' !!}">
-  <meta name="csrf-token" content="">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   @if(isset($page->canonical_url))<link rel="canonical" href="{!! $page->canonical_url !!}" />@endif
   @if(($page->no_index ?? false))<meta name="robots" content="noindex">@endif
   @if(isset($page->og_url))<meta property="og:url" content="{{ $page->og_url }}" />@endif

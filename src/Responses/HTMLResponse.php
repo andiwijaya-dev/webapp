@@ -10,12 +10,14 @@ class HTMLResponse implements Responsable {
   protected $data;
   protected $status;
   protected $headers;
+  protected $iframe;
 
-  public function __construct($data = [], $status = 200, array $headers = [])
+  public function __construct($data = [], $status = 200, array $headers = [], $iframe = null)
   {
     $this->data = $data;
     $this->status = $status;
     $this->headers = $headers;
+    $this->iframe = $iframe;
 
     $this->headers['Content-Type'] = 'application/json';
   }
@@ -68,9 +70,9 @@ class HTMLResponse implements Responsable {
     return $this;
   }
 
-  public function replace($target, $html){
+  public function replace($target, $html, array $options = []){
 
-    $this->data[] = [ '_type'=>'html', 'html'=>$html, 'mode'=>'replace', 'target'=>$target ];
+    $this->data[] = [ '_type'=>'html', 'html'=>$html, 'mode'=>'replace', 'target'=>$target, 'options'=>$options ];
     return $this;
   }
 

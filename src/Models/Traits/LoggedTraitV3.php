@@ -101,6 +101,8 @@ trait LoggedTraitV3{
       $trace['class'] == get_class($this))
       return Model::save($options);
 
+    $return = null;
+
     try{
 
       DB::beginTransaction();
