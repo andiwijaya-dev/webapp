@@ -128,31 +128,31 @@ class ScheduledTask extends Model
       'pid'=>getmypid()
     ]);
 
-    if(strpos($this->command, 'SerializableClosure') !== false){
+    try{
+      if(strpos($this->command, 'SerializableClosure') !== false){
 
-      if (null !== $securityProvider = SerializableClosure::getSecurityProvider()) {
-        SerializableClosure::removeSecurityProvider();
-      }
+        if (null !== $securityProvider = SerializableClosure::getSecurityProvider()) {
+          SerializableClosure::removeSecurityProvider();
+        }
 
-      $command = unserialize($this->command)->getClosure();
+        $command = unserialize($this->command)->getClosure();
 
-      if ($securityProvider !== null) {
-        SerializableClosure::addSecurityProvider($securityProvider);
-      }
+        if ($securityProvider !== null) {
+          SerializableClosure::addSecurityProvider($securityProvider);
+        }
 
-      try{
         $output = call_user_func_array($command, [ $result ]);
         $exitCode = 0;
       }
-      catch(\Exception $ex){
-        $exitCode = 1;
-        $output = $ex->getMessage() . "@" . $ex->getFile() . ":" . $ex->getLine() . PHP_EOL;
-        report($ex);
+      else{
+        $exitCode = Artisan::call($this->command);
+        $output = Artisan::output();
       }
     }
-    else{
-      $exitCode = Artisan::call($this->command);
-      $output = Artisan::output();
+    catch(\Exception $ex){
+      $exitCode = 1;
+      $output = $ex->getMessage() . "@" . $ex->getFile() . ":" . $ex->getLine() . PHP_EOL;
+      report($ex);
     }
 
     if($exitCode == 0 && $this->remove_after_completed)
